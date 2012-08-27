@@ -1,0 +1,36 @@
+Type CONSTS
+    Field _con As String
+    Field _str As String
+EndType
+
+
+start = Timer()
+filename$ = "C:\Program Files (x86)\CoolBasic\IDE\Keywords.const.txt"
+
+file = OpenToRead(filename)
+
+
+While Not EOF(file)
+
+    _line$ = Trim(ReadLine(file))
+        
+    c.CONSTS = New(CONSTS)
+    c\_con = Replace(GetWord(_line,2),":Int","") '"Const TOK_"+Upper(GetWord(_line,1))+"_KW:Int = "
+    c\_str = GetWord(c\_con,2,"_")
+    
+Wend
+CloseFile file
+
+file = OpenToWrite("C:\Program Files (x86)\CoolBasic\IDE\Keywords.single.txt")
+
+For c = Each CONSTS
+    WriteLine file,"AddTokenSingle "+c\_con+", "+Chr(34)+Lower(c\_str)+Chr(34)
+Next c
+
+
+CloseFile file
+
+Print "Done in "+(Timer()-start)+"ms"
+
+WaitKey
+End

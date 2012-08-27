@@ -1,0 +1,10 @@
+*.exe
+*.s
+*.o
+*.i
+*.a
+*.log
+.bmx/
+*.layout
+*.blpo
+*.txt

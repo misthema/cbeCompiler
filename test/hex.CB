@@ -1,0 +1,25 @@
+Type TYYPPI
+    Field ARVO_KENTTA1
+    Field ARVO_KENTTA2
+End Type
+
+Global asda = $FFAA00
+Dim asdb = $FAFAFA
+asdc = $51223A
+inte = 13410
+stringit$ = "p‰‰ll‰" 'LOL min‰ olen kommentti t‰‰ll‰ per‰ss‰
+floatti# = .432
+lasku% = 1 +2-3 *4/5^6
+// LOL olen kommentti t‰ss‰ v‰liss‰
+Print inte
+
+quit:
+label            :
+
+WaitKey
+
+
+Function func(param1 As integer, param2 As String) As String
+    Global testing
+    Return param2+" + "+param1
+EndFunction

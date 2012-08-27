@@ -1,0 +1,21 @@
+'This is your first CoolBasic program!
+Function Distance3#(x1#,y1#,x2#,y2#)
+    Return Sqrt((x2-x1)^2+(y2-y1)^2)
+EndFunction
+
+Function Distance4#(ang#,x1#,y1#,x2#,y2#)
+    X12#= Abs(x2-x1)/Cos(ang):Y12#= Abs(y2-y1)/Sin(ang)
+    If X12>Y12 Then Return X12 Else Return Y12 'OLEN KOMMENTTI!
+EndFunction
+    
+_string = "This is a string, that contains this text!"
+
+Print Distance(10,10,20,20)
+Print Distance3(10,10,20,20)
+ang#=GetAngle(20,40,10,10)
+
+Print Distance4(ang,10.1,10.2,20.3,20.4)
+
+floating# = 1.23623 'WTF MAN
+
+WaitKey'Olen kommentti joka on kiinni waitkey:ssä

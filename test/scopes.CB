@@ -1,0 +1,16 @@
+Global iGlobal As Integer
+Global fGlobal As Float
+Global iGlobal2
+Global fGlobal2#
+
+Dim iLocal As Integer
+Dim fLocal As Float
+
+Dim iArray(100) As Integer
+Dim fArray(100) As Float
+
+
+Function func()
+    iLocal = 2
+    fLocal = 2.4
+EndFunction

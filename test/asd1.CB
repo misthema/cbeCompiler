@@ -1,0 +1,23 @@
+*** Input ***
+
+length = 10
+k = 0
+
+For i = 0 To length-1
+    k = k + i
+Next i
+
+
+*** OUTPUT ***
+
+.BB0
+    length = 10
+    k = 0
+    i = 0
+.BB1
+    t1. k + i
+    t2. k = t1
+    t3. i + 1
+    t4. i = t4
+    t5. length - 1
+    t6. If i <= t5 Goto t1

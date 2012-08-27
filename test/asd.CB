@@ -1,0 +1,45 @@
+*** OUTPUT ***
+
+.BB0
+    a = 0
+    b = 1
+.BB1
+    If a < b Goto .BB2
+    Goto .BB3
+.BB2
+    t1. a + b
+    t2. c = t1
+    t3. a = b
+    t4. b = c
+    Goto .BB4
+.BB3
+    t1. a + b
+    t2. c = t1
+    t3. a = c
+    t4. b = a
+    Goto .BB4
+.BB4
+    out
+
+
+*** OUTPUT ***
+
+.BB0
+    a = 0
+    b = 1
+.BB1
+    If a < b Goto .BB2
+    Goto .BB3
+.BB2
+    c = a + b
+    t3. a = b
+    t4. b = c
+    Goto .BB4
+.BB3
+    t1. a + b
+    t2. c = t1
+    t3. a = c
+    t4. b = a
+    Goto .BB4
+.BB4
+    out

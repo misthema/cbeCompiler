@@ -38,5 +38,9 @@ Rem
 		Note:
 			Every variable in programming is a Number
 			(memory address, handler, value and so on).
+			
+		Expr = Term | Term & (TOK_PLUS | TOK_MINUS) & Term
+		Term = Factor | Factor & (TOK_ASTERISK | TOK_SLASH) & Factor
+		Factor = TOK_NUM_LIT | TOK_OPENPAREN & Expr & TOK_CLOSEPAREN
 		
 endrem

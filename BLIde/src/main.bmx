@@ -15,6 +15,7 @@ AppTitle = "cbEnchanted Compiler " + CBEC_VERSION
 Global TEST:Byte = True
 
 
+
 ? Not Debug
 Try
 ?
@@ -27,15 +28,18 @@ Try
 		path = ExtractDir(args[1]) + "/".Replace("\", "/")
 		source = StripDir(args[1])
 	Else
-		path = "C:/Program Files (x86)/CoolBasic/Codes & Projects/Avaruusmätke/"
-		source = "main.cb"
+		'path = "C:/Program Files (x86)/CoolBasic/Codes & Projects/Avaruusmätke/"
+		'source = "main.cb"
 		
-		'path = "../../test/"
-		'source = "hex.cb"
+		path = "../../test/"
+		source = "hex.cb"
+		
+		'path = "C:/Program Files (x86)/CoolBasic/Codes & Projects/VesQ-NetMatch-e864029/cb_source/"
+		'source = "NetMatch_TheEnd.cb"
 	EndIf
 		
 	
-	AddFile(path + source)
+	AddFile(path + source, True)
 	
 	fprint
 	'End
@@ -62,29 +66,37 @@ Try
 		_lexers:+[lexer]
 		
 		'WriteStdout "DONE (" + _end + "ms)~n"
+		_lines:+lexer._current.Line
+		_ttokens:+lexer._tokens
 	Next
 	WriteStdout "DONE (" + totalTime1 + "ms)~n"
 	
+	For Local lex:TLexer = EachIn _lexers
+		For Local tok:TToken = EachIn lex._tokens
+			Print tok._string + " = " + tok.kind
+		Next
+	Next
+	
 	WriteStdout "Symbolising..."
-	For Local lexer:TLexer = EachIn _lexers
+	'For Local lexer:TLexer = EachIn _lexers
 		Local start:Int, _end:Int
 		
 		' Symbolising tokens is recursive, so we don't want to run them again...
 		' This system is pretty fucked up, but hey, I'm new to this kind of things! :-)
-		If lexer._symbolised = False
+		'If lexer._symbolised = False
 			'WriteStdout "  ~q" + lexer._fileName + "~q..."
 			
 			start = MilliSecs()
-			ScopeTokens(lexer, FindFileLexer)
+			ScopeTokens(_lexers[0], FindFileLexer, True)
+			'ScopeTokens(_lexers[0], FindFileLexer, False)
 			_end = MilliSecs() - start
 			totalTime2:+_end
 			
 			'WriteStdout "DONE (" + _end + "ms)~n"
-		EndIf
+		'EndIf
 		
-		_lines:+lexer._current.Line
-		_ttokens:+lexer._tokens
-	Next
+		
+	'Next
 	
 	WriteStdout "DONE (" + totalTime2 + "ms)~n"
 	
@@ -92,40 +104,8 @@ Try
 	
 	Print "Scanned and symbolised " + FileList.Count() + " files (" + _lines + " lines) in " + (totalTime) + "ms"
 	Print "Tokens: " + _ttokens.length
-	
 
-	? Debug
-		Local delog:TStream = WriteStream("debuglog.txt")
-		'For Local t:TToken = EachIn _ttokens
-		'	If t.kind <> TOK_NEWLINE
-		'		delog.WriteLine LSet("tokenToString(" + t.kind + ") = ~q" + tokenToString(t.kind) + "~q", 40) + LSet(" ( " + t._string + " )", 20) + "[" + t.Line + ":" + t.column + "]"
-		'	EndIf
-		'Next
-		
-		Local depth:String, token:TToken, lexer:TLexer
-		For Local sv:TSymbol = EachIn symbols
-			lexer = sv.lexer
-			token = lexer._tokens[sv.tokenID]
-			Select token.scope
-				Case SCOPE_LOCAL
-					depth = "Local"
-				Case SCOPE_GLOBAL
-					depth = "Global"
-				Case SCOPE_FUNCTION
-					depth = "Function"
-			End Select
-			delog.WriteLine LSet("Symbol: " + token._string, 36) + " in " + depth + " (file: " + lexer._fileName + "[" + token.Line + ":" + token.column + "])"
-		Next
-		delog.Close()
-	?
-
-
-	'Print "Starting program..."
-	
-	'While WaitSystem()
-	'Wend
-	
-	system_("PAUSE>")
+	system_("PAUSE")
 	
 	End
 	

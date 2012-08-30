@@ -27,6 +27,9 @@ Function AddFile(filename:String, main_:Byte = False)
 End Function
 
 Function FindIncludes(f:TFile)
+
+	WriteStdout "FincIncludes():~n  path: " + f.path + "~n  file: " + f._filename + "~n"
+
 	Local fileStream:TStream = ReadFile(f.path + f._filename)
 	
 	If Not fileStream Throw "File doesn't exist!"
@@ -34,7 +37,7 @@ Function FindIncludes(f:TFile)
 	While Not fileStream.Eof()
 		Local _line:String = fileStream.ReadLine()
 		
-		If Instr(_line, "Include")
+		If Instr(_line, "Include") and Not (Left(_line, 1) = "'" or Left(_line, 2) = "//")
 			'f.includes.AddFirst _line.Split(" ")[1].Replace("~q", "")
 			AddFile f.path + _line.Split(" ")[1].Replace("~q", "")
 		End If

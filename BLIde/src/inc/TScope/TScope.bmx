@@ -1,163 +1,227 @@
 SuperStrict
+Import brl.map
 Import brl.linkedlist
 Import "../TLexer/TLexer.bmx"
-Include "cbType.bmx"
-Include "scopeVar.bmx"
+Import "scopes.bmx"
 
 
-Const SCOPE_LOCAL:Int = 1
-Const SCOPE_GLOBAL:Int = 2
-Const SCOPE_FUNCTION:Int = 3
-
-Global symbols:TSymbol[]
-Global symbolList:TList = New TList
-Global symbolNamesLocal:TList = New TList
-Global symbolNamesGlobal:TList = New TList
+Global localScope:TScope = TScope(CreateScope(SCOPE_LOCAL))
+Global globalScope:TScope = TScope(CreateScope(SCOPE_GLOBAL))
 
 
-Function ScopeTokens(lexer:TLexer, FFL:TLexer(filename:String))
+
+Function ScopeTokens(lexer:TLexer, FFL:TLexer(filename:String), globals:Byte)
 	Local tokenIter:Int = 0
-	Local token:TToken
+	Local token:TToken = lexer._tokens[0]
 	
-	Local scope:Int
+	Local funcScope:TFunction = Null
+	Local typeScope:TType = Null
 	
-
+	Local inComment:Byte = False
+	
+	
+	
 	'Global, Type, Function and Array symbols first
-	If lexer._symbolised = False
-		If lexer._globalised = False
-			While lexer._tokens[tokenIter].kind <> TOK_EOF
+	'If lexer._globalised = False And lexer._symbolised = False And globals = True
+
+			While token.kind <> TOK_EOF
 				token = lexer._tokens[tokenIter]
 				
+				If token.kind = TOK_REMSTART Then inComment = True
+				If token.kind = TOK_REMEND Then inComment = False
+				
+				If inComment = False
+					
+					Select token.kind
+						Case TOK_INCLUDE_KW
+							token = lexer._tokens[tokenIter + 1]
+
+							If token.kind = TOK_STRING_LIT
+								ScopeTokens(FFL(token._string), FFL, False)
+							End If
+							
+						Case TOK_DIM_KW
+							tokenIter = ScopeTokens_Dim(lexer, tokenIter + 1)
+							
+							'Local symbol:TSymbol = CreateSymbol(tokenIter + 1, lexer, cbtyp, SCOPE_GLOBAL, SYM_TYPE_GBL, dimensions)
+							
+							'globalScope.AddSymbol(tok._string,)
+							
+						Case TOK_GLOBAL_KW
+							'lexer._tokens[tokenIter] = readIdentifier(tokenIter + 1, lexer)
+						Case TOK_TYPE_KW
+							
+						Case TOK_CONST_KW
+						
+						Case TOK_FUNCTION_KW
+						Case TOK_ENDFUNCTION_KW
+						
+					End Select
+				End If
+				
+				tokenIter:+1
+			Wend
+
+		lexer._globalised = True
+	'EndIf
+	
+	tokenIter = 0
+	
+	'Normal, local variables second
+	If lexer._globalised = True And lexer._symbolised = False And globals = False
+		While lexer._tokens[tokenIter].kind <> TOK_EOF
+			token = lexer._tokens[tokenIter]
+			
+			If token.kind = TOK_REMSTART Then inComment = True
+			If token.kind = TOK_REMEND Then inComment = False
+			
+			If inComment = False
 				Select token.kind
 					Case TOK_INCLUDE_KW
 						token = lexer._tokens[tokenIter + 1]
 						
 						If token.kind = TOK_STRING_LIT
-							FFL(token._string)
+							ScopeTokens(FFL(token._string), FFL, False)
 						End If
-					Case TOK_GLOBAL_KW
-						If scope = SCOPE_FUNCTION
-							lexer.doLineError("Cannot define global inside a function!", token.Line, token.column)
-						End If
-						token = lexer._tokens[tokenIter + 1]
-						
-						If token.kind = TOK_ID
-							token.scope = SCOPE_GLOBAL
-							If AddScopeVariable(token._string, tokenIter + 1, lexer, True, True)
-								lexer.doLineError("Global variable '" + token._string + "' already defined!", token.Line, token.column)
-							End If
-						End If
-					
-					Case TOK_DIM_KW
-						token = lexer._tokens[tokenIter + 1]
-						
-						If token.kind = TOK_ID And lexer._tokens[tokenIter + 2].kind = TOK_OPENPAREN
-							token.scope = SCOPE_GLOBAL
-							If scope = SCOPE_FUNCTION token.scope = SCOPE_FUNCTION
-							If AddScopeVariable(token._string, tokenIter + 1, lexer, True, True)
-								lexer.doLineError("Array '" + token._string + "' already defined!", token.Line, token.column)
-							End If
-						End If
-					
-					Case TOK_TYPE_KW
-						If scope = SCOPE_FUNCTION
-							lexer.doLineError("Cannot define type inside a function!", token.Line, token.column)
-						End If
-						token = lexer._tokens[tokenIter + 1]
-						
-						If token.kind = TOK_ID
-							token.scope = SCOPE_GLOBAL
-							If AddScopeVariable(token._string, tokenIter + 1, lexer, True, True)
-								lexer.doLineError("Type '" + token._string + "' already defined!", token.Line, token.column)
-							End If
-						End If
-					
+
 					Case TOK_FUNCTION_KW
-						If scope = SCOPE_FUNCTION
-							lexer.doLineError("Cannot find missing EndFunction!", token.Line, token.column)
-						End If
-						token = lexer._tokens[tokenIter + 1]
-						
-						If token.kind = TOK_ID
-							token.scope = SCOPE_GLOBAL
-							If AddScopeVariable(token._string, tokenIter + 1, lexer, True, True)
-								lexer.doLineError("Function '" + token._string + "' already defined!", token.Line, token.column)
-							End If
-						End If
-						scope = SCOPE_FUNCTION
-				
+						'scope = SCOPE_FUNCTION
+					
 					Case TOK_ENDFUNCTION_KW
-						scope = SCOPE_LOCAL
-
+						'scope = SCOPE_LOCAL
 					
-					Case TOK_CONST_KW
-						If scope = SCOPE_FUNCTION
-							lexer.doLineError("Cannot define constant inside a function!", token.Line, token.column)
-						End If
-						token = lexer._tokens[tokenIter + 1]
+					Case TOK_ID
 						
-						If token.kind = TOK_ID
-							token.scope = SCOPE_GLOBAL
-							If AddScopeVariable(token._string, tokenIter + 1, lexer, True, True)
-								lexer.doLineError("Constant variable '" + token._string + "' already defined!", token.Line, token.column)
-							End If
-						End If
-					
-					Case TOK_LABEL
-						token = lexer._tokens[tokenIter + 1]
-						
-						If token.kind = TOK_ID
-							token.scope = SCOPE_GLOBAL
-							If scope = SCOPE_FUNCTION token.scope = SCOPE_FUNCTION
-							If AddScopeVariable(token._string, tokenIter + 1, lexer, True, True)
-								lexer.doLineError("Label '" + token._string + "' already defined!", token.Line, token.column)
-							End If
-						End If
 				End Select
-				
-				tokenIter:+1
-			Wend
-		EndIf
-		lexer._globalised = True
-		
-		tokenIter = 0
-		
-		'Normal, local variables second
-		While lexer._tokens[tokenIter].kind <> TOK_EOF
-			token = lexer._tokens[tokenIter]
-			
-			
-			
-			Select token.kind
-				Case TOK_FUNCTION_KW
-					scope = SCOPE_FUNCTION
-				
-				Case TOK_ENDFUNCTION_KW
-					scope = SCOPE_LOCAL
-
-				Case TOK_DIM_KW
-					token = lexer._tokens[tokenIter + 1]
-					
-					If token.kind = TOK_ID
-						If Not AddScopeVariable(token._string, tokenIter + 1, lexer, False, True)
-							token.scope = SCOPE_LOCAL
-						Else
-							lexer.doLineError("Variable '" + token._string + "' already defined!", token.Line, token.column)
-						End If
-					End If
-				
-				Case TOK_ID
-					
-					If Not AddScopeVariable(token._string, tokenIter, lexer, False, True)
-						token.scope = SCOPE_LOCAL
-					End If
-	
-			End Select
+			EndIf
 			
 			tokenIter:+1
 		Wend
 		
-		lexer._symbolised = true
+		lexer._symbolised = True
 	EndIf
 
+End Function
+
+
+
+Function ScopeTokens_Dim:Int(lexer:TLexer, iter:Int)
+	Local token:TToken = lexer._tokens[iter]
+	
+	Local symbolName:String
+	Local symbolType:Int
+	Local arrDimensions:Int
+	
+	
+	' If token is not an identifier, throw error
+	If token.kind <> TOK_ID Then
+		lexer.doLineError("Expected identifier but encountered '" + token._string + "'!", token.Line, token.column)
+	End If
+	
+	
+	While lexer._tokens[iter].kind <> TOK_NEWLINE
+
+		arrDimensions = 0
+		symbolType = -1
+		symbolName = token._string
+		iter:+1
+		token = lexer._tokens[iter]
+		
+		' Now we have the identifiers name, check for its type
+		If isTypeDef(token.kind)
+			symbolType = getCBType(token.kind)
+			
+			iter:+1
+			token = lexer._tokens[iter]
+		EndIf
+		
+		' Check if it is an array declaration
+		If token.kind = TOK_OPENPAREN
+			' Get the dimensions
+			iter:+1
+			token = lexer._tokens[iter]
+			
+			While True
+			
+				If arrDimensions > 5 Then
+					lexer.doLineError("Max. dimensions allowed is 5!", token.Line, token.column)
+				EndIf
+				
+				If token.kind = TOK_NUMBER_LIT
+					If token.isDec = False
+						arrDimensions:+1
+					
+					Else
+						lexer.doLineError("Expected integer but encountered float!", token.Line, token.column)
+					End If
+				
+				ElseIf token.kind = TOK_ID
+					arrDimensions:+1
+					
+					If isTypeDef(lexer._tokens[iter + 1].kind)
+						iter:+1
+						token = lexer._tokens[iter]
+					End If
+				
+				Else
+					lexer.doLineError("Expected dimension size but encountered '" + token._string + "'!", token.Line, token.column)
+				End If
+				
+				iter:+1
+				token = lexer._tokens[iter]
+				
+				If token.kind = TOK_CLOSEPAREN
+					iter:+1
+					token = lexer._tokens[iter]
+					
+					If isTypeDef(token.kind)
+						If symbolType <> - 1
+							lexer.doLineError("'" + symbolName + "' has two type definitions!", token.Line, token.column)
+						End If
+						symbolType = getCBType(token.kind)
+						iter:+1
+						token = lexer._tokens[iter]
+					End If
+					
+					Exit
+				
+				ElseIf token.kind = TOK_COMMA
+					iter:+1
+					token = lexer._tokens[iter]
+				
+				Else
+					lexer.doLineError("Expected ',' or ')' but encountered '" + token._string + "'!", token.Line, token.column)
+				End If
+			WEnd
+			
+		ElseIf token.kind = TOK_COMMA
+			iter:+1
+			token = lexer._tokens[iter]
+			
+			If token.kind = TOK_ID
+				Continue
+			Else
+				lexer.doLineError("Expected new identifier but encountered '" + token._string + "'!", token.Line, token.column)
+			End If
+			
+		End If
+		
+		? Debug
+			Print "ScopeTokens_Dim():"
+			Print "   " + symbolName
+			Print "   " + symbolType
+			Print "   " + arrDimensions
+		?
+	Wend
+	
+	
+	Return iter
+	
+	Function isTypeDef:Byte(id:Int)
+		Select id
+			Case TOK_INT_TYPE, TOK_BYTE_TYPE, TOK_SHORT_TYPE, TOK_FLOAT_TYPE, TOK_STRING_TYPE
+				Return True
+		End Select
+		Return False
+	End Function
 End Function

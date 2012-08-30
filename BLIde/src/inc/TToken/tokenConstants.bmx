@@ -416,7 +416,12 @@ Const TOK_REMSTART:Int = 413
 Const TOK_REMEND:Int = 414
 Const TOK_INTEGER_KW:Int = 415
 Const TOK_LABEL:Int = 416
-Const TOK_EOF:Int = 417
+Const TOK_INT_TYPE:Int = 417
+Const TOK_FLOAT_TYPE:Int = 418
+Const TOK_BYTE_TYPE:Int = 419
+Const TOK_SHORT_TYPE:Int = 420
+Const TOK_STRING_TYPE:Int = 421
+Const TOK_EOF:Int = 422
 
 	
 Const TOK_LAST:Int = TOK_EOF

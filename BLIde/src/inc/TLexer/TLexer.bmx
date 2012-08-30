@@ -211,15 +211,15 @@ Type TLexer
 						?
 						mergeTokens(tokenIter, tokenIter + 1, tokenPair[pairIter].kind)
 						merged = True
-					ElseIf Not tokenPair[pairIter].kind = TOK_LABEL
+						Exit
+					EndIf
+				
+					If Not(tokenPair[pairIter].kind = TOK_LABEL)
 						Print "Merge: " + tokenToString(tleft.kind) + " + " + tokenToString(tright.kind) + " = " + tokenToString(tokenPair[pairIter].kind)
 						mergeTokens(tokenIter, tokenIter + 1, tokenPair[pairIter].kind)
 						merged = True
-					End If
-					
-					
-
-					Exit
+						Exit
+					EndIf
 				End If
 				
 				pairIter:+1
@@ -393,6 +393,12 @@ Type TLexer
 			Exit
 		Wend
 		
+		If isDec
+			token.isDec = True
+		Else
+			token.isDec = False
+		End If
+		
 		token._to = _current.place + 1
 		
 		'ExportString(token)
@@ -405,7 +411,7 @@ Type TLexer
 		Local token:TToken = New TToken
 		Local mark:TTokenMark = lexerMark()
 		
-		token.kind = TOK_NUMBER_LIT
+		token.kind = TOK_HEX_LIT
 		token.Line = mark.Line
 		token.column = mark.column
 		token._from = mark.place

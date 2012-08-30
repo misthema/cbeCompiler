@@ -393,7 +393,7 @@ Global tokenString:String[] = [ ..
 	",",  ..
 	"|",  ..
 	"&",  ..
-	"\n",  ..
+	"End-Of-Line",  ..
 	"=+",  .. ' Assigns: a =+ b (a = a + b)
 	"=-",  ..
 	"=/",  ..
@@ -416,7 +416,12 @@ Global tokenString:String[] = [ ..
 	"RemEnd",  ..
 	"Integer",  ..
 	"Label",  ..
-	"<EOF>" ..
+	"Integer",  ..
+	"Float",  ..
+	"Byte",  ..
+	"Short",  ..
+	"String",  ..
+	"End-Of-File" ..
 ]
 
 Function tokenToString:String(index:Int)

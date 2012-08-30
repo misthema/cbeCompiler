@@ -22,6 +22,11 @@ Type TToken
 	'Where the token is visible
 	Field scope:Int
 	
+	'What CB type this token is
+	Field isDec:Int
+	
+	
+	
 	
 	Method copy:TToken()
 		Local t:TToken = New TToken

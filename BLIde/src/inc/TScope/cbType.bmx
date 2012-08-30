@@ -1,5 +1,5 @@
 Type TCBType
-	Field matches:String
+	Field matches:Int
 	Field kind:Int
 End Type
 
@@ -12,29 +12,26 @@ Const CB_TYPE_STRING:Int = 5
 
 Global cbTypes:TCBType[]
 
-AddCBType CB_TYPE_BYTE, "byte"
-AddCBType CB_TYPE_SHORT, "short"
-AddCBType CB_TYPE_INT, "integer"
-AddCBType CB_TYPE_INT, "%"
-AddCBType CB_TYPE_FLOAT, "float"
-AddCBType CB_TYPE_FLOAT, "#"
-AddCBType CB_TYPE_STRING, "string"
-AddCBType CB_TYPE_STRING, "$"
+AddCBType CB_TYPE_BYTE, TOK_BYTE_TYPE
+AddCBType CB_TYPE_SHORT, TOK_SHORT_TYPE
+AddCBType CB_TYPE_INT, TOK_INT_TYPE
+AddCBType CB_TYPE_FLOAT, TOK_FLOAT_TYPE
+AddCBType CB_TYPE_STRING, TOK_STRING_TYPE
 
-Function AddCBType(kind:Int, matches:String)
+Function AddCBType(kind:Int, id:Int)
 	Local cbt:TCBType = New TCBType
 	
-	cbt.matches = matches
+	cbt.matches = id
 	cbt.kind = kind
 	
 	cbTypes:+[cbt]
 End Function
 
-Function getCBTypeMatch:Int(ch:String)
+Function getCBType:Int(id:Int)
 	For Local cbt:TCBType = EachIn cbTypes
-		If cbt.matches = ch.ToLower()
+		If cbt.matches = id
 			Return cbt.kind
 		End If
 	Next
-	Return 0
+	Return CB_TYPE_UNKNOWN
 End Function

@@ -32,14 +32,17 @@ Function FindIncludes(f:TFile)
 
 	Local fileStream:TStream = ReadFile(f.path + f._filename)
 	
-	If Not fileStream Throw "File doesn't exist!"
+	If Not fileStream Throw "File '" + f.path + f._filename + "' doesn't exist!"
 	
 	While Not fileStream.Eof()
 		Local _line:String = fileStream.ReadLine()
 		
-		If Instr(_line, "Include") and Not (Left(_line, 1) = "'" or Left(_line, 2) = "//")
-			'f.includes.AddFirst _line.Split(" ")[1].Replace("~q", "")
-			AddFile f.path + _line.Split(" ")[1].Replace("~q", "")
+		Local incPos:Int = Instr(_line, "Include")
+		Local incFileStart:Int = Instr(_line, "~q", incPos)
+		Local incFileEnd:Int = Instr(_line, "~q", incFileStart + 1)
+		
+		If incPos > 0 And incFileStart > 0 And incFileEnd > incFileStart
+			AddFile f.path + Mid(_line, incFileStart, incFileEnd - incFileStart).Replace("~q", "")
 		End If
 	Wend
 End Function
